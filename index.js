@@ -12,6 +12,7 @@ var walkSpeed = 150, runSpeed = 450;
 var jumpTimer = 0;
 var sprite,testSquare;
 var smoketrail;
+var clearSmokeButton;
 var nextFire = 0;
 var fireRate = 100;
 
@@ -27,7 +28,7 @@ require(["Phaser"],
 
         function create()
         {
-            this.game.world.setBounds(0, 0, 3500, this.game.height);
+            this.game.world.setBounds(0, 0, 3500, this.game.height + 300);
             game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
             this.game.stage.backgroundColor = "#4488AA";
 
@@ -47,7 +48,7 @@ require(["Phaser"],
             smoketrail.enableBody = true;
             smoketrail.physicsBodyType = Phaser.Physics.ARCADE;
 
-            smoketrail.createMultiple(50,'smoke');
+            smoketrail.createMultiple(250,'smoke');
             smoketrail.setAll('checkWorldBounds', true);
             smoketrail.setAll('outOfBoundsKill', true);
 
@@ -55,31 +56,44 @@ require(["Phaser"],
             jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             walkButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
             fullscreenToggleButton = game.input.keyboard.addKey(Phaser.Keyboard.F);
+            clearSmokeButton = game.input.keyboard.addKey(Phaser.Keyboard.C);
 
             sprite.body.gravity.y = 2000;
+            var style = { font: "bold 24px Arial", fill: "#fff", boundsAlignH: "center"};
+            //  The Text is positioned at 0, 100
+            var textGroup = game.add.group();
+            var controls = ["Controls",
+                            "Move Left: left arrow or A",
+                            "Move Right: right arrow or D",
+                            "jump: up arrow, W, or Spacebar",
+                            "Create smoke: Drag Mouse",
+                             "Clear all Smoke: C"];
+            for(var i = 0; i < controls.length; i++)
+            {
+                var text = game.add.text(this.game.width / 4 ,50 * i , controls[i], style);
+                text.setTextBounds(0, 400, 800, 200);
+                textGroup.add(text);
+            }
         }
 
         function render ()
         {
-            //game.debug.geom(floor,'#00ffff');
             game.physics.arcade.overlap(sprite,smoketrail,function(r,t)
             {
-                if(r.body.velocity.y > -200)
+                if(r.body.velocity.y > -1000)
                     r.body.velocity.y = 0;
 
             });
-            game.debug.text('Active Bullets: ' + smoketrail.countLiving() + ' / ' + smoketrail.total, 32, 32);
-            game.debug.spriteInfo(sprite, 32, 450);
         }
 
         function update()
         {
             if(sprite.body.velocity.x < 0) {
-                sprite.body.velocity.x += 15;
+                sprite.body.velocity.x += 45;
                 sprite.body.velocity.x = Math.min(sprite.body.velocity.x,0);
             }
             else {
-                sprite.body.velocity.x -= 15;
+                sprite.body.velocity.x -= 45;
                 sprite.body.velocity.x = Math.max(sprite.body.velocity.x,0);
             }
 
@@ -93,7 +107,7 @@ require(["Phaser"],
             }
 
             if ((jumpButton.isDown || cursors.up.isDown || game.input.keyboard.isDown(Phaser.Keyboard.W))
-                && (sprite.body.onFloor() || game.physics.arcade.collide(sprite,smoketrail,collisionHandler,processHandler,this)))
+                && (sprite.body.onFloor() || game.physics.arcade.overlap(sprite,smoketrail,collisionHandler,processHandler,this)))
                 sprite.body.velocity.y = -1000;
 
             if(fullscreenToggleButton.isDown)
@@ -111,6 +125,12 @@ require(["Phaser"],
             if (game.input.mousePointer.isDown)
             {
                 createSmoke();
+            }
+
+            //clear current smoke
+            if(clearSmokeButton.isDown) {
+                smoketrail.removeAll();
+                smoketrail.createMultiple(250,'smoke');
             }
         }
         function createSmoke()
