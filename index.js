@@ -10,7 +10,7 @@ var fullscreenToggleButton;
 
 var walkSpeed = 150, runSpeed = 450;
 var jumpTimer = 0;
-var sprite,floor, testSquare;
+var sprite,testSquare;
 var smoketrail;
 var nextFire = 0;
 var fireRate = 100;
@@ -34,11 +34,9 @@ require(["Phaser"],
             testSquare = game.add.graphics();
             testSquare.beginFill(0xff0000,1);
             testSquare.drawRect(0,0,100,100);
-            floor = new Phaser.Rectangle(0,game.height - 50,game.width,50);
             sprite = game.add.sprite(testSquare.width,testSquare.height,null);
             sprite.addChild(testSquare);
             game.physics.enable(sprite,Phaser.Physics.ARCADE);
-            game.physics.enable(floor,Phaser.Physics.ARCADE);
             sprite.body.collideWorldBounds = true;
             sprite.body.setSize(testSquare.width, testSquare.height);
 
@@ -64,7 +62,12 @@ require(["Phaser"],
         function render ()
         {
             //game.debug.geom(floor,'#00ffff');
-            game.physics.arcade.overlap(sprite,floor,function(r,t){r.body.velocity.y = 0;});
+            game.physics.arcade.overlap(sprite,smoketrail,function(r,t)
+            {
+                if(r.body.velocity.y > -200)
+                    r.body.velocity.y = 0;
+
+            });
             game.debug.text('Active Bullets: ' + smoketrail.countLiving() + ' / ' + smoketrail.total, 32, 32);
             game.debug.spriteInfo(sprite, 32, 450);
         }
@@ -90,7 +93,7 @@ require(["Phaser"],
             }
 
             if ((jumpButton.isDown || cursors.up.isDown || game.input.keyboard.isDown(Phaser.Keyboard.W))
-                && sprite.body.onFloor())
+                && (sprite.body.onFloor() || game.physics.arcade.collide(sprite,smoketrail,collisionHandler,processHandler,this)))
                 sprite.body.velocity.y = -1000;
 
             if(fullscreenToggleButton.isDown)
@@ -127,4 +130,13 @@ require(["Phaser"],
 
         }
 
+        function processHandler (player, group) {
+
+            return true;
+
+        }
+
+        function collisionHandler (player, group) {
+
+        }
     });
