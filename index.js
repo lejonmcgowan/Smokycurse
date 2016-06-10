@@ -12,7 +12,8 @@ var walkSpeed = 150, runSpeed = 450;
 var jumpTimer = 0;
 var sprite,floor, testSquare;
 var smoketrail;
-var nextFire;
+var nextFire = 0;
+var fireRate = 100;
 
 require(["Phaser"],
     function(Phaser)
@@ -64,6 +65,8 @@ require(["Phaser"],
         {
             //game.debug.geom(floor,'#00ffff');
             game.physics.arcade.overlap(sprite,floor,function(r,t){r.body.velocity.y = 0;});
+            game.debug.text('Active Bullets: ' + smoketrail.countLiving() + ' / ' + smoketrail.total, 32, 32);
+            game.debug.spriteInfo(sprite, 32, 450);
         }
 
         function update()
@@ -119,7 +122,7 @@ require(["Phaser"],
 
                 newPuff.reset(game.input.worldX, game.input.worldY);
 
-                game.physics.arcade.moveToPointer(newPuff, 300);
+                //game.physics.arcade.moveToPointer(newPuff, 300);
             }
 
         }
